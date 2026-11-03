@@ -11,7 +11,8 @@ function [OP, PrA1, PrA2] = rsma_outage(PsdB, T, N, p)
 %   common  (eq. 5): gamma_c = a_c*rho*x / ( sum_j a_j * rho*x + 1 )
 %   private (eq. 6): gamma_p = a_k*rho*x / ( sum_{j~=k} a_j * rho*x + 1 )   (after perfect SIC of s_c)
 % HARQ-CC: SINRs are summed over T rounds (eq. (1)).
-% K = numel(p.alpha_p). If p.rsma_ordered, user 1 = min channel among K users.
+% K = numel(p.alpha_p). If p.rsma_ordered, user 1 = weakest of the K users,
+% chosen by order_users(..., p.order) (same rule as NOMA/OMA).
 %
 % Run with no inputs for a quick stand-alone plot.
 
@@ -29,6 +30,9 @@ if nargin == 0
 end
 
 ac = p.alpha_c;  ap = p.alpha_p;  K = numel(ap);  k = 1;
+if abs(ac + sum(ap) - 1) > 1e-9
+    error('Power coefficients must satisfy alpha_c + sum(alpha_p) = 1 (eq. 2); got %.4f.', ac + sum(ap));
+end
 sumP   = sum(ap);              % all private powers (interference for s_c)
 sumOth = sumP - ap(k);         % other users' private powers (interference for s_k)
 
@@ -45,8 +49,9 @@ nDone = 0;
 while nDone < N
     n = min(p.chunk, N - nDone);
     if p.rsma_ordered
-        x = sr_gain([T n], p);
-        for u = 2:K, x = min(x, sr_gain([T n], p)); end
+        H = sr_gain([T n], p);
+        for u = 2:K, H = cat(3, H, sr_gain([T n], p)); end
+        x = order_users(H, p.order);
     else
         x  = sr_gain([T n], p);
         x2 = sr_gain([T n], p);  %#ok<NASGU> keep RNG stream aligned with OMA/NOMA
