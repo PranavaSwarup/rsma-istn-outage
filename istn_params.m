@@ -36,16 +36,31 @@ p.Gs = Gs;
 
 % Gk = c*sqrt(Gs*Gr)/(4*pi*fc*d),  g_k = Gk^2/N0   (eq. (5))
 Gk  = p.c*sqrt(Gs*Gr)/(4*pi*p.fc*p.d);
-p.g = Gk^2/p.N0;              % so that SNR = Ps * g * |h|^2  (~0.74 dB)
+p.g_paper = Gk^2/p.N0;        % so that SNR = Ps * g * |h|^2  (~0.74 dB)
+
+% [DIAGNOSTIC, not in paper] extra link gain in dB. Keep 0 for the paper's
+% stated parameters. With +6 dB our Fig. 4 RSMA and T=1 OMA curves land on the
+% published ones, while Fig. 2 matches at 0 dB -> the paper's Fig. 4 seems to
+% use ~6 dB more SNR than its stated parameters give. See README.
+p.extra_gain_dB = 0;
+p.g = p.g_paper * 10^(p.extra_gain_dB/10);
 
 %% ---------------- RSMA (Fig. 4 caption) [paper]
 p.alpha_c   = 0.4;            % common-stream power fraction
 p.alpha_p   = [0.3 0.3];      % private-stream fractions (K = 2 users)
 p.gc_th     = 0.4;            % common decoding threshold  (SINR, linear)
 p.gp_th     = 0.4;            % private decoding threshold (SINR, linear)
-p.rsma_ordered = false;       % paper's RSMA analysis treats user k as a generic
-                              % i.i.d. user (no ordering). Set true to make RSMA's
-                              % "weak user" the min-channel user, like NOMA/OMA.
+p.rsma_ordered = false;       % paper's RSMA analysis (eqs 9, 11) treats user k as a
+                              % generic i.i.d. user (no ordering), and its Fig. 4
+                              % RSMA curves come from that analysis. Set true to
+                              % make RSMA's user the weak user (same rule as
+                              % NOMA/OMA, p.order) for a like-for-like comparison.
+
+%% ---------------- Weak/strong user ordering across HARQ rounds [ASSUMED]
+% 'first' : roles set by round-1 channel, kept for all T rounds (default)
+% 'sum'   : roles set by accumulated channel over T rounds (genie benchmark)
+% 'round' : per-round min/max (old v1 behaviour, physically inconsistent)
+p.order = 'first';
 
 %% ---------------- Equal-rate conversion [paper]
 p.Rc = log2(1 + p.gc_th);     % common target rate (bps/Hz)
@@ -60,6 +75,8 @@ p.g_noma  = 2^p.R1 - 1;          % SINR threshold for R1
 %% ---------------- OMA (TDMA) [ASSUMED interpretation]
 % Each user gets half the time, so to deliver R1 on average it must run at
 % 2*R1 inside its own slot (full power, no interference).
+% Support for this reading: with 2^R1 - 1 instead, OMA would beat NOMA at
+% T = 1, contradicting the paper's Fig. 4 ranking (OMA worst).
 p.g_oma = 2^(2*p.R1) - 1;
 
 %% ---------------- Simulation
