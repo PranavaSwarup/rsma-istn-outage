@@ -2,19 +2,12 @@ function [OPweak, OPstrong] = oma_outage(PsdB, T, N, p)
 % OMA_OUTAGE  Monte Carlo outage of HARQ-CC aided OMA (TDMA), 2 users.
 %
 %   [OPweak, OPstrong] = oma_outage(PsdB, T, N, p)
-%     PsdB : vector of total transmit power (dBW)
-%     T    : number of HARQ-CC rounds
-%     N    : Monte Carlo samples per point
-%     p    : struct from istn_params()
 %
-% Model (per round t, in the user's own TDMA slot, full power Ps):
-%     gamma_t = Ps * g * |h_t|^2               (no interference)
-% HARQ-CC (MRC of identical packets) -> accumulated SINR = sum_t gamma_t
-% Outage if  sum_t gamma_t < g_oma,  g_oma = 2^(2*R1) - 1
-% (rate doubled because each user only owns half the time).
-% Weak/strong user = min/max of the two users' channel gains in each round.
-%
-% Run with no inputs for a quick stand-alone plot.
+% Per round t, in the user's own TDMA slot at full power:
+%     gamma_t = rho * x_t,   rho = Ps*g        (no interference, no ceiling)
+% HARQ-CC (MRC of identical packets) -> accumulated SINR = sum_t gamma_t   (eq. 1)
+% Outage if sum_t gamma_t < g_oma = 2^(2*R1) - 1   ([12]: K slots -> 2^(K*R)-1)
+% Weak/strong users from order_users(..., p.order).
 
 if nargin == 0
     p = istn_params(); PsdB = -20:2.5:10; N = 2e6;
@@ -36,7 +29,7 @@ while nDone < N
     n  = min(p.chunk, N - nDone);
     h1 = sr_gain([T n], p);
     h2 = sr_gain([T n], p);
-    hw = min(h1,h2);  hs = max(h1,h2);   % per-round ordering
+    [hw, hs] = order_users(h1, h2, p.order);
     for i = 1:nP
         sw = Ps(i)*p.g*hw;  ss = Ps(i)*p.g*hs;
         cntW(i) = cntW(i) + sum(sum(sw,1) < p.g_oma);
