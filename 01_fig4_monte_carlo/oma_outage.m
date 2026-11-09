@@ -12,7 +12,7 @@ function [OPweak, OPstrong] = oma_outage(PsdB, T, N, p)
 % HARQ-CC (MRC of identical packets) -> accumulated SINR = sum_t gamma_t
 % Outage if  sum_t gamma_t < g_oma,  g_oma = 2^(2*R1) - 1
 % (rate doubled because each user only owns half the time).
-% Weak/strong user = min/max of the two users' channel gains in each round.
+% Weak/strong user chosen by order_users(.., p.order): 'round' or 'first'.
 %
 % Run with no inputs for a quick stand-alone plot.
 
@@ -34,9 +34,8 @@ cntW = zeros(1,nP);  cntS = zeros(1,nP);
 nDone = 0;
 while nDone < N
     n  = min(p.chunk, N - nDone);
-    h1 = sr_gain([T n], p);
-    h2 = sr_gain([T n], p);
-    hw = min(h1,h2);  hs = max(h1,h2);   % per-round ordering
+    H  = cat(3, sr_gain([T n], p), sr_gain([T n], p));   % T x n x 2 users
+    [hw, hs] = order_users(H, p.order);                  % weak / strong
     for i = 1:nP
         sw = Ps(i)*p.g*hw;  ss = Ps(i)*p.g*hs;
         cntW(i) = cntW(i) + sum(sum(sw,1) < p.g_oma);

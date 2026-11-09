@@ -19,7 +19,7 @@ function [OPfar, OPnear] = noma_outage(PsdB, T, N, p)
 %   far outage  : sum gamma_1 < g_noma
 %   near outage : sum gamma_{2->1} < g_noma  OR  sum gamma_2 < g_noma
 % with g_noma = 2^R1 - 1, R1 = Rc/2 + Rp  (same per-user rate as RSMA).
-% Far/near = min/max of the two channel gains in each round.
+% Far/near (weak/strong) chosen by order_users(.., p.order): 'round' or 'first'.
 %
 % Run with no inputs for a quick stand-alone plot.
 
@@ -47,9 +47,8 @@ cntF = zeros(1,nP);  cntN = zeros(1,nP);
 nDone = 0;
 while nDone < N
     n  = min(p.chunk, N - nDone);
-    h1 = sr_gain([T n], p);
-    h2 = sr_gain([T n], p);
-    xf = min(h1,h2);  xn = max(h1,h2);
+    H  = cat(3, sr_gain([T n], p), sr_gain([T n], p));   % T x n x 2 users
+    [xf, xn] = order_users(H, p.order);                  % far(weak) / near(strong)
     for i = 1:nP
         rho = Ps(i)*p.g;
         % far user

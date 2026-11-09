@@ -4,8 +4,7 @@ function op = mc_outage(PsdB, T, N, p)
 % algebra), so it is an independent check of op_closed_form_T1.
 %
 % HARQ-CC: a stream is decoded if  sum_{t=1..T} gamma_t >= threshold.
-% Ordering of the two OMA/NOMA users (weak = min gain, strong = max gain) is
-% done per round, as in 01_fig4_monte_carlo.
+% Weak/strong user chosen by order_users(.., p.order), as in 01_fig4_monte_carlo.
 % Supports hardware impairments through p.hi_lambda.
 %
 % Same output fields as op_closed_form_T1.
@@ -28,10 +27,9 @@ while nDone < N
     n = min(p.chunk, N - nDone);
     h = zeros(T, n, U);
     for u = 1:U, h(:, :, u) = sr_gain([T n], p); end
-    xw  = min(h(:, :, 1), h(:, :, 2));   % weak of users 1-2
-    xs  = max(h(:, :, 1), h(:, :, 2));   % strong of users 1-2
-    xk  = h(:, :, 1);                    % generic RSMA user
-    xkw = min(h(:, :, 1:K), [], 3);      % weakest of K RSMA users
+    [xw, xs] = order_users(h(:, :, 1:2), p.order);   % weak / strong of users 1-2
+    xk  = h(:, :, 1);                                % generic RSMA user
+    xkw = order_users(h(:, :, 1:K), p.order);        % weakest of K RSMA users
 
     for i = 1:nP
         r = rho(i);

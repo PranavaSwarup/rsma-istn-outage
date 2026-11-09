@@ -67,6 +67,12 @@ p.g_oma = 2^(2*p.R1) - 1;
 % what the paper assumes. Used only by the files in 02_sinr_closed_form_outage.
 p.hi_lambda = 0;
 
+%% ---------------- Weak/strong user ordering under HARQ-CC [ASSUMED]
+% 'round' : weak/strong re-chosen every round (matches the paper's ranking)
+% 'first' : roles fixed by round 1 (same packet resent, physically consistent)
+% See order_users.m. Identical for T = 1.
+p.order = 'round';
+
 %% ---------------- Simulation
 p.seed  = 2025;
 p.chunk = 1e6;                % samples per chunk (memory control)

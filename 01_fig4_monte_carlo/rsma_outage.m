@@ -11,7 +11,8 @@ function [OP, PrA1, PrA2] = rsma_outage(PsdB, T, N, p)
 %   common  (eq. 5): gamma_c = a_c*rho*x / ( sum_j a_j * rho*x + 1 )
 %   private (eq. 6): gamma_p = a_k*rho*x / ( sum_{j~=k} a_j * rho*x + 1 )   (after perfect SIC of s_c)
 % HARQ-CC: SINRs are summed over T rounds (eq. (1)).
-% K = numel(p.alpha_p). If p.rsma_ordered, user 1 = min channel among K users.
+% K = numel(p.alpha_p). If p.rsma_ordered, user 1 = weakest of K users,
+% chosen by order_users(.., p.order).
 %
 % Run with no inputs for a quick stand-alone plot.
 
@@ -45,8 +46,9 @@ nDone = 0;
 while nDone < N
     n = min(p.chunk, N - nDone);
     if p.rsma_ordered
-        x = sr_gain([T n], p);
-        for u = 2:K, x = min(x, sr_gain([T n], p)); end
+        H = zeros(T, n, K);
+        for u = 1:K, H(:, :, u) = sr_gain([T n], p); end
+        x = order_users(H, p.order);
     else
         x  = sr_gain([T n], p);
         x2 = sr_gain([T n], p);  %#ok<NASGU> keep RNG stream aligned with OMA/NOMA

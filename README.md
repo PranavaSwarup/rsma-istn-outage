@@ -15,6 +15,7 @@ and uses the NOMA modelling of its reference [12]:
 | Folder | Contents |
 |---|---|
 | [`01_fig4_monte_carlo/`](01_fig4_monte_carlo) | Monte Carlo reproduction of Fig. 2 and Fig. 4 of Hu *et al.* (weak-user outage, OMA vs NOMA vs RSMA, T = 1 and T = 3). Also holds the shared parameter file and channel generator. |
+| [`03_shadowed_rician_pdf/`](03_shadowed_rician_pdf) | Shadowed-Rician PDF of eq. (4): simulation-vs-analysis validation, and a shape guide (heavy / average / light shadowing vs Rayleigh and Rician). |
 | [`02_sinr_closed_form_outage/`](02_sinr_closed_form_outage) | All SINRs of the three schemes in one common form, the **exact closed-form outage for T = 1**, an independent Monte Carlo check, an SINR-ceiling report, and a hardware-impairment extension. |
 
 No toolboxes are needed (`randg`, `besselj`, `gammainc` and `gammaln` are core MATLAB). Run every script from inside its own folder. The scripts in folder 02 call `setup_paths` themselves to reach the shared files in folder 01.
@@ -177,3 +178,21 @@ Following Singh *et al.*, transceiver distortion adds $\lambda^2$ (EVM²) to eve
 | Breaks at λ > | 0.632 | 0.671 | 0.757 | 0.875 |
 
 Realistic EVMs (λ ≤ 0.2) only shift the curves. RSMA's common stream is the most sensitive. Set `p.hi_lambda` in `istn_params.m` (default 0 = the paper's ideal hardware).
+
+
+---
+
+## 9. Week 3 additions (branch `week3-oma-noma-sinr-pdf`)
+
+**Weak-user ordering under HARQ-CC, both options.** `p.order` in `istn_params.m`, implemented in `01_fig4_monte_carlo/order_users.m` and used by `oma_outage`, `noma_outage`, `rsma_outage` (when `p.rsma_ordered`) and `mc_outage`.
+
+| `p.order` | Weak user is | Why |
+|---|---|---|
+| `'round'` (default) | re-chosen in every round: $\min_k |h_{k,t}|^2$ | The paper's HARQ-CC analysis needs every round to have the same distribution, which only holds here. Reproduces the paper's T = 3 ranking RSMA < NOMA < OMA. |
+| `'first'` | fixed by round 1 and kept for all T rounds | HARQ-CC resends the same superposed packet, so roles cannot change between rounds. Gives NOMA < RSMA < OMA at T = 3. |
+
+For T = 1 they are identical. `fig4_reproduce` now plots both side by side (`fig4_both_orderings.png`).
+
+**Shadowed-Rician PDF** (`03_shadowed_rician_pdf/`): `sr_pdf.m` evaluates eq. (4), $f(x)=\lambda e^{-\beta x}\,{}_1F_1(m;1;\delta x)$, by series (no Symbolic Toolbox). `sr_pdf_check.m` overlays it on a histogram of `sr_gain` samples and the closed-form CDF on the empirical CDF, and plots the shape guide.
+
+**Where the NOMA/OMA SINRs come from.** Ref. [12] (Singh et al.), eq. (6), with ideal hardware ($\lambda=0$), perfect SIC ($\varpi=0$) and its effective IRS channel replaced by the satellite link $P_s g_k|h_k|^2$, gives $\gamma_{k\to l}=\delta_l\rho|h|^2/(\sum_{i>l}\delta_i\rho|h|^2+1)$, i.e. the NOMA SINRs above. Its eq. (11) gives the outage rule (fail any $x_l$, $l\le k$) and its OMA benchmark needs K slots, i.e. threshold $2^{KR}-1$.
