@@ -62,6 +62,11 @@ p.g_noma  = 2^p.R1 - 1;          % SINR threshold for R1
 % 2*R1 inside its own slot (full power, no interference).
 p.g_oma = 2^(2*p.R1) - 1;
 
+%% ---------------- Hardware impairments [EXTENSION, not in the paper]
+% Aggregate transceiver distortion level (EVM). 0 = ideal hardware, which is
+% what the paper assumes. Used only by the files in 02_sinr_closed_form_outage.
+p.hi_lambda = 0;
+
 %% ---------------- Simulation
 p.seed  = 2025;
 p.chunk = 1e6;                % samples per chunk (memory control)
