@@ -17,7 +17,7 @@ fprintf('g_k = %.3f (%.2f dB),  N0 = %.3e W\n', p.g, 10*log10(p.g), p.N0);
 fprintf('R1 = %.4f bps/Hz | thresholds: NOMA %.4f, OMA %.4f, RSMA c/p %.2f/%.2f\n', ...
         p.R1, p.g_noma, p.g_oma, p.gc_th, p.gp_th);
 
-res = struct();
+res = cell(numel(orders), numel(Tset));
 for io = 1:numel(orders)
     p.order = orders{io};
     for it = 1:numel(Tset)
@@ -29,7 +29,7 @@ for io = 1:numel(orders)
         [r.rsma, A1, A2] = rsma_outage(PsdB, T, N, p);   % generic RSMA user (as in paper)
         r.rsmaUp = min(A1 + A2, 1);
         r.rsmaLo = max(A1, A2);
-        res(io, it) = r;
+        res{io, it} = r;
         fprintf('  done in %.1f s\n', toc);
         fprintf('  Ps(dBW)   OMA        NOMA       RSMA\n');
         for i = 1:numel(PsdB)
@@ -47,7 +47,7 @@ figure('Color','w', 'Position', [100 100 1100 450]);
 for io = 1:numel(orders)
     subplot(1, numel(orders), io); hold on; box on; grid on;
     for it = 1:numel(Tset)
-        r = res(io, it);  m = mk{it};
+        r = res{io, it};  m = mk{it};
         semilogy(PsdB, nz(r.oma),    ['-' m], 'Color', cO, 'LineWidth', 1.4, 'MarkerSize', 7);
         semilogy(PsdB, nz(r.noma),   ['-' m], 'Color', cN, 'LineWidth', 1.4, 'MarkerSize', 7);
         semilogy(PsdB, nz(r.rsmaUp), '-',     'Color', cR, 'LineWidth', 1.4);

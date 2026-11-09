@@ -18,7 +18,7 @@ and uses the NOMA modelling of its reference [12]:
 | [`03_shadowed_rician_pdf/`](03_shadowed_rician_pdf) | Shadowed-Rician PDF of eq. (4): simulation-vs-analysis validation, and a shape guide (heavy / average / light shadowing vs Rayleigh and Rician). |
 | [`02_sinr_closed_form_outage/`](02_sinr_closed_form_outage) | All SINRs of the three schemes in one common form, the **exact closed-form outage for T = 1**, an independent Monte Carlo check, an SINR-ceiling report, and a hardware-impairment extension. |
 
-No toolboxes are needed (`randg`, `besselj`, `gammainc` and `gammaln` are core MATLAB). Run every script from inside its own folder. The scripts in folder 02 call `setup_paths` themselves to reach the shared files in folder 01.
+No toolboxes are needed (`besselj`, `besseli`, `gammainc` and `gammaln` are core MATLAB; Gamma samples use a built-in Marsaglia-Tsang sampler because `randg` needs the Statistics Toolbox). Run every script from inside its own folder. The scripts in folder 02 call `setup_paths` themselves to reach the shared files in folder 01.
 
 ```matlab
 % week 1: Monte Carlo
