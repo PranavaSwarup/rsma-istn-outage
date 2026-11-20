@@ -22,6 +22,8 @@ fprintf('\n===================== harq_repeated_interference ====================
 cd(fileparts(which('run_extra_checks'))); run('harq_repeated_interference.m');
 fprintf('\n===================== isic_floor =====================\n');
 cd(fileparts(which('run_extra_checks'))); run('isic_floor.m');
+fprintf('\n===================== fig4_calibrated =====================\n');
+cd(fileparts(which('run_extra_checks'))); run('fig4_calibrated.m');
 
 cd(fileparts(which('run_extra_checks')));
 movefile('harq_repeated_interference.png', fullfile('out', 'harq_repeated_interference.png'));
