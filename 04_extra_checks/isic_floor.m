@@ -54,4 +54,5 @@ set(gca, 'YScale', 'log'); ylim([1e-6 1]);
 xlabel('P_s (dBW)'); ylabel('Outage probability, T = 1');
 title('Imperfect SIC (ref. [12]) gives an error floor: diversity 0');
 legend(leg, 'Location', 'southwest');
+try, theme(gcf, 'light'); catch, end
 saveas(gcf, 'isic_floor.png');

@@ -55,6 +55,7 @@ plot(xc(1:8:end), Fe(1:8:end), 'bo', 'MarkerSize', 5);
 plot(xc, Fth, 'r-', 'LineWidth', 1.8);
 xlabel('x = |h|^2'); ylabel('F_{|h|^2}(x)');
 title('(c) CDF: simulation vs closed form'); legend('Simulation', 'Analysis', 'Location', 'southeast');
+try, theme(gcf, 'light'); catch, end   % white background in R2025b dark mode
 saveas(gcf, 'sr_pdf_validation.png');
 
 %% ---------------- Figure 2: shape guide (all unit mean)
@@ -93,6 +94,7 @@ semilogy(xg, fr, 'k:', 'LineWidth', 1.8);
 set(gca,'YScale','log'); ylim([1e-4 3]);
 xlabel('x = |h|^2 (unit mean)'); ylabel('PDF (log)');
 title('Log scale: near-zero value and tail');
+try, theme(gcf, 'light'); catch, end   % white background in R2025b dark mode
 saveas(gcf, 'sr_shape_guide.png');
 
 fprintf('\nf(0) = lambda = %.4f (finite, non-zero: deep fades are possible)\n', sr_pdf(0, p));

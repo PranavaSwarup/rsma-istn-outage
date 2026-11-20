@@ -18,12 +18,12 @@ n   = 0:39;
 w   = exp(log(lam) + gammaln(p.m + n) - gammaln(p.m) - gammaln(n + 1) ...
           + n*log(del) - (n + 1)*log(beta));
 area = gammainc(beta*t, n + 1);
-run  = cumsum(w .* area);
+runF = cumsum(w .* area);   % not "run": that would hide MATLAB's run()
 
 fprintf('t = %.4f  (rho = %.3f)\n', t, rho);
 fprintf('  n    weight w_n   block area   running F\n');
 for k = 1:16
-    fprintf(' %2d    %.4f       %.4f       %.4f\n', n(k), w(k), area(k), run(k));
+    fprintf(' %2d    %.4f       %.4f       %.4f\n', n(k), w(k), area(k), runF(k));
 end
 fprintf('\nsum of weights (40 terms) = %.6f   (should be 1)\n', sum(w));
-fprintf('F(t) series = %.4f   sr_cdf = %.4f\n', run(end), sr_cdf(t, p));
+fprintf('F(t) series = %.4f   sr_cdf = %.4f\n', runF(end), sr_cdf(t, p));

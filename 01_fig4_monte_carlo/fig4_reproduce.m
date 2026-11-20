@@ -68,5 +68,6 @@ for io = 1:numel(orders)
     legend(h, {'T=1','T=3','OMA','NOMA','RSMA upper bound','RSMA lower bound'}, ...
            'Location', 'southwest');
 end
+try, theme(gcf, 'light'); catch, end   % white background in R2025b dark mode
 saveas(gcf, 'fig4_both_orderings.png');
 save('fig4_results.mat', 'res', 'PsdB', 'p', 'N', 'orders');
