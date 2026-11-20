@@ -17,6 +17,7 @@ and uses the NOMA modelling of its reference [12]:
 | [`01_fig4_monte_carlo/`](01_fig4_monte_carlo) | Monte Carlo reproduction of Fig. 2 and Fig. 4 of Hu *et al.* (weak-user outage, OMA vs NOMA vs RSMA, T = 1 and T = 3). Also holds the shared parameter file and channel generator. |
 | [`03_shadowed_rician_pdf/`](03_shadowed_rician_pdf) | Shadowed-Rician PDF of eq. (4): simulation-vs-analysis validation, and a shape guide (heavy / average / light shadowing vs Rayleigh and Rician). |
 | [`02_sinr_closed_form_outage/`](02_sinr_closed_form_outage) | All SINRs of the three schemes in one common form, the **exact closed-form outage for T = 1**, an independent Monte Carlo check, an SINR-ceiling report, and a hardware-impairment extension. |
+| [`04_extra_checks/`](04_extra_checks) | Extra checks behind the study notes: exact OMA outage over T rounds, why RSMA needs bounds for T > 1, ordering comparison, a repeated-interference HARQ model, and imperfect SIC from ref. [12]. See section 10. |
 
 No toolboxes are needed (`besselj`, `besseli`, `gammainc` and `gammaln` are core MATLAB; Gamma samples use a built-in Marsaglia-Tsang sampler because `randg` needs the Statistics Toolbox). Run every script from inside its own folder. The scripts in folder 02 call `setup_paths` themselves to reach the shared files in folder 01.
 
@@ -196,3 +197,22 @@ For T = 1 they are identical. `fig4_reproduce` now plots both side by side (`fig
 **Shadowed-Rician PDF** (`03_shadowed_rician_pdf/`): `sr_pdf.m` evaluates eq. (4), $f(x)=\lambda e^{-\beta x}\,{}_1F_1(m;1;\delta x)$, by series (no Symbolic Toolbox). `sr_pdf_check.m` overlays it on a histogram of `sr_gain` samples and the closed-form CDF on the empirical CDF, and plots the shape guide.
 
 **Where the NOMA/OMA SINRs come from.** Ref. [12] (Singh et al.), eq. (6), with ideal hardware ($\lambda=0$), perfect SIC ($\varpi=0$) and its effective IRS channel replaced by the satellite link $P_s g_k|h_k|^2$, gives $\gamma_{k\to l}=\delta_l\rho|h|^2/(\sum_{i>l}\delta_i\rho|h|^2+1)$, i.e. the NOMA SINRs above. Its eq. (11) gives the outage rule (fail any $x_l$, $l\le k$) and its OMA benchmark needs K slots, i.e. threshold $2^{KR}-1$.
+
+
+---
+
+## 10. Extra checks (branch `20-nov`, folder `04_extra_checks/`)
+
+Run everything with `run_extra_checks` from inside the folder (a few minutes; log and figures go to `04_extra_checks/out/`). Each script can also be run on its own. All scripts reuse the functions of folders 01 and 02 through `setup_extra_paths`. The numbers below are from a run in GNU Octave 8.4 (figures were not rendered there; they are written by MATLAB).
+
+| Script / function | What it shows | Key result at 5 dBW |
+|---|---|---|
+| `sr_cdf_steps.m` | How `sr_cdf` builds F(t) from Gamma blocks: weights, block areas, running total | F(0.667) settles at 0.335 after about 8 terms; weights sum to 1 |
+| `sr_cdf_T.m` (function) | Exact CDF of the **sum** of T Shadowed-Rician gains (T-fold convolution of the Gamma-mixture weights, shapes k + T) | T = 1 reproduces `sr_cdf` |
+| `oma_diversity_exact.m` | Exact OMA outage over T HARQ-CC rounds, F_T((2^(2R)−1)/ρ), checked by Monte Carlo | 0.211 / 0.0162 / 7.2e-4 for T = 1 / 2 / 3; from 20 to 30 dBW the outage falls ×10, ×105, ×1059 (diversity T) |
+| `rsma_nesting_demo.m` | Two-round examples where only the private or only the common stream fails, and Pr A₁, Pr A₂, bounds and true outage for T = 1..3 | T = 2: Pr A₁ 0.0140, Pr A₂ 0.0176, true 0.0179, upper 0.0316; the bottleneck flips to the private stream |
+| `ordering_compare.m` | Weak/strong ordering under HARQ-CC, `'round'` vs `'first'` (`mc_outage` run twice) | NOMA far user T = 2: 0.0204 vs 0.0106; T = 3: 9.4e-4 vs 2.5e-4. Identical at T = 1 |
+| `mc_outage_repeated.m` (function) + `harq_repeated_interference.m` | HARQ-CC with the interference **repeated** in every round: the SINR of the summed gain, δρS/(ϑρS+1), instead of the paper's sum of per-round SINRs. Exact for the generic RSMA user via `sr_cdf_T` | RSMA T = 2: 0.0413 vs the paper model's 0.0178 (×2.3); T = 3: 2.9e-3 vs 6.4e-4 (×4.6). The common-stream SINR can no longer exceed its ceiling 0.667, whatever T is. OMA is unchanged |
+| `mc_outage_isic.m` (function) + `isic_floor.m` | Imperfect SIC as in ref. [12] eq. (6): residual ρ\|g_I\|², \|g_I\|² ~ Exp(Ω_I), on every step after a SIC (NOMA near user, RSMA private stream) | Error floor (diversity 0): Ω_I = −20 dB gives NOMA near 6.9e-5, RSMA 5.7e-3; Ω_I = −10 dB gives 2.1e-2 and 9.2e-2. NOMA far user and OMA are unaffected |
+
+**Why the repeated-interference model.** Chase combining resends the same superposed packet, so the interfering streams carry the same symbols in every round. After maximum-ratio combining, the wanted signal and the interference both add coherently (∝ S²) while the noise adds incoherently (∝ S), giving γ = δρS/(ϑρS + 1) with S = Σ_t |h_t|². Summing per-round SINRs treats the interference as fresh noise in each round and is optimistic.
