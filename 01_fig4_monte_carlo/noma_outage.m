@@ -25,13 +25,15 @@ function [OPfar, OPnear] = noma_outage(PsdB, T, N, p)
 
 if nargin == 0
     p = istn_params(); PsdB = -20:2.5:10; N = 2e6;
+    nz = @(v) v ./ (v > 0);              % 0 outages in N trials -> NaN (not plotted)
     figure; hold on;
     for T = [1 3]
         [OPf, OPn] = noma_outage(PsdB, T, N, p);
-        semilogy(PsdB, max(OPf,eps), '-o', 'DisplayName', sprintf('NOMA far, T=%d',T));
-        semilogy(PsdB, max(OPn,eps), '--s','DisplayName', sprintf('NOMA near, T=%d',T));
+        semilogy(PsdB, nz(OPf), '-o', 'DisplayName', sprintf('NOMA far, T=%d',T));
+        semilogy(PsdB, nz(OPn), '--s','DisplayName', sprintf('NOMA near, T=%d',T));
     end
-    set(gca,'YScale','log'); grid on; legend show; xlabel('P_s (dBW)'); ylabel('Outage probability');
+    set(gca,'YScale','log'); grid on; legend('Location','southwest');
+    xlabel('P_s (dBW)'); ylabel('Outage probability');
     return;
 end
 

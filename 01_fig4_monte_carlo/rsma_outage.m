@@ -18,14 +18,16 @@ function [OP, PrA1, PrA2] = rsma_outage(PsdB, T, N, p)
 
 if nargin == 0
     p = istn_params(); PsdB = -20:2.5:10; N = 2e6;
+    nz = @(v) v ./ (v > 0);              % 0 outages in N trials -> NaN (not plotted)
     figure; hold on;
     for T = [1 3]
         [OP, A1, A2] = rsma_outage(PsdB, T, N, p);
-        semilogy(PsdB, max(OP,eps), 'o', 'DisplayName', sprintf('RSMA sim, T=%d',T));
-        semilogy(PsdB, max(min(A1+A2,1),eps), '-',  'DisplayName', sprintf('upper, T=%d',T));
-        semilogy(PsdB, max(max(A1,A2),eps),   '--', 'DisplayName', sprintf('lower, T=%d',T));
+        semilogy(PsdB, nz(OP),            'o',  'DisplayName', sprintf('RSMA sim, T=%d',T));
+        semilogy(PsdB, nz(min(A1+A2,1)), '-',  'DisplayName', sprintf('upper bound, T=%d',T));
+        semilogy(PsdB, nz(max(A1,A2)),   '--', 'DisplayName', sprintf('lower bound, T=%d',T));
     end
-    set(gca,'YScale','log'); grid on; legend show; xlabel('P_s (dBW)'); ylabel('Outage probability');
+    set(gca,'YScale','log'); grid on; legend('Location','southwest');
+    xlabel('P_s (dBW)'); ylabel('Outage probability');
     return;
 end
 
