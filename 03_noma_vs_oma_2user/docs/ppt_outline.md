@@ -5,10 +5,10 @@ Use this to build the deck in any slide tool. Each slide lists its **title**, **
 **Style suggestions:**
 - Same look as the earlier RSMA-ISTN deck: light background, navy titles, a small blue section tag above each title.
 - One idea per slide, with the equation in a boxed card.
-- Colours: weak user blue (#0072BD), strong user orange (#D95319). NOMA solid lines, OMA dashed. Analysis = line + square, simulation = star.
+- Plot style (same as the figures): colour = scheme (NOMA blue #0072BD, OMA red #D92626); line = user (weak solid, strong dashed); marker = method (analysis = square, simulation = star).
 - Footer: "Sharma et al. (IET Commun. 2020) + Hu et al. (IEEE TVT 2025) · NOMA vs OMA outage · page n".
 
-Figures are in `figures/` in the repo: fig1–fig4.
+Figures are in `03_noma_vs_oma_2user/figures/` on branch `24th-nov` of `PranavaSwarup/rsma-istn-outage`: fig1–fig4.
 
 ---
 
